@@ -3,11 +3,13 @@ package lordfokas.cartography.feature.discovery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import com.eerussianguy.blazemap.engine.BlazeMapAsync;
 import lordfokas.cartography.feature.TFCContent;
@@ -17,8 +19,10 @@ public class DiscoveryHandler {
     public static void onInteract(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getWorld();
         if(!level.isClientSide) return;
+
         BlockPos pos = event.getPos();
         TFCContent.Profile profile = TFCContent.getProfile(level.getBlockState(pos).getBlock());
+
         if(profile != null && profile.type.classification == TFCContent.Classification.DISCOVERY) {
             switch(profile.type) {
                 case NUGGET -> addNugget(level.dimension(), pos, profile.name);
@@ -30,14 +34,21 @@ public class DiscoveryHandler {
 
     @SubscribeEvent
     public static void onBreak(BlockEvent.BreakEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        if(event.getPlayer() != mc.player) return;
-        LevelAccessor level = event.getWorld();
+        Player player = event.getPlayer();
+
+        // This will not work on the dedicated server
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            Minecraft mc = Minecraft.getInstance();
+            if(player != mc.player) return;
+        }
+
+        Level level = player.getLevel();
         BlockPos pos = event.getPos();
         TFCContent.Profile profile = TFCContent.getProfile(level.getBlockState(pos).getBlock());
+
         if(profile != null && profile.type.classification == TFCContent.Classification.DISCOVERY) {
             if(profile.type == TFCContent.Type.NUGGET) {
-                addNugget(mc.level.dimension(), pos, profile.name);
+                addNugget(level.dimension(), pos, profile.name);
             }
         }
     }
