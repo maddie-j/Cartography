@@ -8,14 +8,16 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import com.eerussianguy.blazemap.engine.BlazeMapAsync;
+
 import lordfokas.cartography.feature.TFCContent;
 
 public class DiscoveryHandler {
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onInteract(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getWorld();
         if(!level.isClientSide) return;
@@ -32,14 +34,14 @@ public class DiscoveryHandler {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBreak(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
 
         // This will not work on the dedicated server
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Minecraft mc = Minecraft.getInstance();
-            if(player != mc.player) return;
+            if(player.getUUID() != mc.player.getUUID()) return;
         }
 
         Level level = player.getLevel();
